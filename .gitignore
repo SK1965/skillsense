@@ -12,12 +12,7 @@
 .husky/pre-commit
 
 # testing
-/coverage
-/src/app
-/src/types
-/src/models
-/src/stores
-/src/utils
+
 # next.js 
 /.next/
 /out/
