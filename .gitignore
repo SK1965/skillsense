@@ -18,7 +18,6 @@
 /src/models
 /src/stores
 /src/utils
-/src/components
 # next.js 
 /.next/
 /out/
