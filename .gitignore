@@ -13,8 +13,13 @@
 
 # testing
 /coverage
-/src
-# next.js
+/src/app
+/src/types
+/src/models
+/src/stores
+/src/utils
+/src/components
+# next.js 
 /.next/
 /out/
 
