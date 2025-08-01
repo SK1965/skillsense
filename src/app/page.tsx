@@ -1,35 +1,35 @@
-"use client"
+'use client';
 
-import { useEffect, useRef } from 'react'
-import { motion} from 'framer-motion'
-import { LenisRef, ReactLenis } from 'lenis/react'
-import { cancelFrame, frame } from 'motion'
-import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards'
-import { feedbackItems } from '@/data/feedbackData'
-import HowItWorksSection from '@/components/how-it-works'
-import { Navbar } from '@/components/navbar'
-import ResumeJDForm from '@/components/resume-jd-form'
+import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { LenisRef, ReactLenis } from 'lenis/react';
+import { cancelFrame, frame } from 'motion';
+import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards';
+import { feedbackItems } from '@/data/feedbackData';
+import HowItWorksSection from '@/components/how-it-works';
+import { Navbar } from '@/components/navbar';
+import ResumeJDForm from '@/components/resume-jd-form';
 import Image from 'next/image';
 export default function Home() {
-  const lenisRef = useRef<LenisRef>(null)
+  const lenisRef = useRef<LenisRef>(null);
 
   useEffect(() => {
-    let rafId: number
+    let rafId: number;
 
     const update = (data: { timestamp: number }) => {
-      if (!lenisRef.current?.lenis) return
+      if (!lenisRef.current?.lenis) return;
       rafId = requestAnimationFrame(() => {
-        lenisRef.current?.lenis?.raf(data.timestamp)
-      })
-    }
+        lenisRef.current?.lenis?.raf(data.timestamp);
+      });
+    };
 
-    frame.update(update, true)
+    frame.update(update, true);
 
     return () => {
-      cancelAnimationFrame(rafId)
-      cancelFrame(update)
-    }
-  }, [])
+      cancelAnimationFrame(rafId);
+      cancelFrame(update);
+    };
+  }, []);
 
   return (
     <ReactLenis root options={{ autoRaf: false }} ref={lenisRef}>
@@ -60,7 +60,9 @@ export default function Home() {
             transition={{ duration: 0.4, delay: 0.5 }}
             className="mt-8 max-w-3xl text-center text-lg sm:text-xl text-neutral-700 dark:text-neutral-300 leading-relaxed"
           >
-            SkillSense helps you instantly analyze your resume with AI, match it with any job description, and receive targeted suggestions to boost your chances.
+            SkillSense helps you instantly analyze your resume with AI, match it
+            with any job description, and receive targeted suggestions to boost
+            your chances.
           </motion.p>
 
           {/* Form Section */}
@@ -80,7 +82,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 1.2 }}
             className="mt-20 max-w-6xl rounded-3xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden"
           >
-             <Image
+            <Image
               src="https://res.cloudinary.com/dolb0no3p/image/upload/v1753967724/hero.png"
               alt="Resume Analyzer"
               layout="responsive" // Ensures the image adapts based on the container's width
@@ -114,5 +116,5 @@ export default function Home() {
         </main>
       </div>
     </ReactLenis>
-  )
+  );
 }

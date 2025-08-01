@@ -1,23 +1,23 @@
-"use client"
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 import {
   CheckCircleIcon,
   XCircleIcon,
   LightBulbIcon,
   ArrowDownTrayIcon,
   ArrowPathIcon,
-} from "@heroicons/react/24/solid";
-import { StarIcon } from "lucide-react";
+} from '@heroicons/react/24/solid';
+import { StarIcon } from 'lucide-react';
 // --- These new imports are key: ---
-import confetti from "canvas-confetti";
-import Tooltip from "@/components/ui/tooltip"; // Create this or swap for your lib's tooltip
+import confetti from 'canvas-confetti';
+import Tooltip from '@/components/ui/tooltip'; // Create this or swap for your lib's tooltip
 
-import CircularScore from "@/components/resultPage/circular-score"; // Animations are handled here!
-import { ResultSchema } from "@/schemas/ResultSchema";
-import z from "zod";
+import CircularScore from '@/components/resultPage/circular-score'; // Animations are handled here!
+import { ResultSchema } from '@/schemas/ResultSchema';
+import z from 'zod';
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function ResultsPage() {
 
   // On mount, load and validate results
   useEffect(() => {
-    const storedResult = sessionStorage.getItem("analysisResult");
+    const storedResult = sessionStorage.getItem('analysisResult');
     if (storedResult) {
       try {
         const parsedData = JSON.parse(storedResult);
@@ -35,13 +35,15 @@ export default function ResultsPage() {
         if (validation.success) {
           setResults(validation.data);
         } else {
-          router.push("/");
+          console.error('Validation error:', validation.error);
+          router.push('/');
         }
-      } catch (e) {
-        router.push("/");
+      } catch (error) {
+        console.error('Parse error:', error);
+        router.push('/');
       }
     } else {
-      router.push("/");
+      router.push('/');
     }
   }, [router]);
 
@@ -88,10 +90,10 @@ export default function ResultsPage() {
           className="text-center mb-8"
         >
           <h1 className="text-5xl font-extrabold bg-gradient-to-br from-blue-600 to-green-500 inline-block  bg-clip-text">
-             🎯
+            🎯
           </h1>
           <h1 className="text-5xl font-extrabold bg-gradient-to-br from-blue-600 to-green-500 inline-block text-transparent bg-clip-text">
-             Resume Fit Score
+            Resume Fit Score
           </h1>
           <p className="mt-2 text-md text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto">
             Instantly see how well your resume matches this job, what makes you
@@ -142,10 +144,7 @@ export default function ResultsPage() {
             className="rounded-2xl border bg-green-50 dark:bg-green-900/10 p-8 shadow-lg"
           >
             <h3 className="flex items-center gap-2 text-xl font-bold text-green-700 dark:text-green-300 mb-4">
-              <CheckCircleIcon
-                className="h-6 w-6 text-green-500"
-                aria-hidden
-              />{" "}
+              <CheckCircleIcon className="h-6 w-6 text-green-500" aria-hidden />{' '}
               Skills Detected
             </h3>
             <ul
@@ -170,7 +169,8 @@ export default function ResultsPage() {
             className="rounded-2xl border bg-red-50 dark:bg-red-900/10 p-8 shadow-lg"
           >
             <h3 className="flex items-center gap-2 text-xl font-bold text-red-700 dark:text-red-300 mb-4">
-              <XCircleIcon className="h-6 w-6 text-red-500" aria-hidden /> Skills Missing
+              <XCircleIcon className="h-6 w-6 text-red-500" aria-hidden />{' '}
+              Skills Missing
             </h3>
             {results.missingSkills.length > 0 ? (
               <ul
@@ -196,7 +196,7 @@ export default function ResultsPage() {
           </motion.div>
         </div>
 
-       {/* AI Suggestions */}
+        {/* AI Suggestions */}
         <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -204,12 +204,19 @@ export default function ResultsPage() {
           className="rounded-2xl border p-8 bg-blue-50/70 dark:bg-blue-900/10 shadow-lg"
         >
           <h3 className="flex items-center gap-2 text-xl font-bold text-blue-700 dark:text-blue-300 mb-4">
-            <LightBulbIcon className="h-6 w-6 text-blue-500" aria-hidden /> AI Recommendations
+            <LightBulbIcon className="h-6 w-6 text-blue-500" aria-hidden /> AI
+            Recommendations
           </h3>
-          <ul className="space-y-3 pl-4 list-disc" aria-label="AI suggestions to improve resume">
+          <ul
+            className="space-y-3 pl-4 list-disc"
+            aria-label="AI suggestions to improve resume"
+          >
             {results.suggestions.map((tip, i) => (
               <li key={i} className="flex items-start gap-2">
-                <LightBulbIcon className="h-5 w-5 text-blue-400 mt-1" aria-hidden />
+                <LightBulbIcon
+                  className="h-5 w-5 text-blue-400 mt-1"
+                  aria-hidden
+                />
                 <span>{tip}</span>
               </li>
             ))}
@@ -224,9 +231,13 @@ export default function ResultsPage() {
           className="rounded-2xl border p-8 bg-yellow-50/70 dark:bg-yellow-900/10 shadow-lg"
         >
           <h3 className="flex items-center gap-2 text-xl font-bold text-amber-700 dark:text-yellow-300 mb-4">
-            <StarIcon className="h-6 w-6 text-amber-500" aria-hidden /> Make Your Resume Stand Out
+            <StarIcon className="h-6 w-6 text-amber-500" aria-hidden /> Make
+            Your Resume Stand Out
           </h3>
-          <ul className="space-y-3 pl-4 list-disc" aria-label="Extra suggestions to make resume stand out">
+          <ul
+            className="space-y-3 pl-4 list-disc"
+            aria-label="Extra suggestions to make resume stand out"
+          >
             {results.extraEdgeSuggestions.map((tip, i) => (
               <li key={i} className="flex items-start gap-2">
                 <StarIcon className="h-5 w-5 text-amber-400 mt-1" aria-hidden />
@@ -264,7 +275,6 @@ export default function ResultsPage() {
             <ArrowPathIcon className="h-5 w-5" aria-hidden /> Analyze Another
           </Button>
         </motion.section>
-
       </div>
     </div>
   );

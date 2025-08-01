@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 // Spinner
 const Spinner = () => (
@@ -12,7 +12,7 @@ const Spinner = () => (
     transition={{ repeat: Infinity, ease: 'linear', duration: 0.8 }}
     aria-label="Loading"
   />
-)
+);
 
 // Check Icon
 const Check = () => (
@@ -32,20 +32,20 @@ const Check = () => (
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
   </motion.div>
-)
+);
 
-type Step = { text: string }
+type Step = { text: string };
 
 const LoaderCore = ({
   steps,
   current,
-  loading
+  loading,
 }: {
-  steps: Step[]
-  current: number
-  loading: boolean
+  steps: Step[];
+  current: number;
+  loading: boolean;
 }) => {
-  const visibleSteps = steps.slice(Math.max(0, current - 1), current + 2)
+  const visibleSteps = steps.slice(Math.max(0, current - 1), current + 2);
 
   return (
     <motion.div
@@ -56,9 +56,9 @@ const LoaderCore = ({
       transition={{ duration: 0.5 }}
     >
       {visibleSteps.map((step, i) => {
-        const actualIndex = Math.max(0, current - 1) + i
-        const isPrev = actualIndex < current
-        const isCurrent = actualIndex === current
+        const actualIndex = Math.max(0, current - 1) + i;
+        const isPrev = actualIndex < current;
+        const isCurrent = actualIndex === current;
 
         return (
           <motion.div
@@ -72,7 +72,11 @@ const LoaderCore = ({
             {isPrev ? (
               <Check />
             ) : isCurrent ? (
-              loading ? <Spinner /> : <Check />
+              loading ? (
+                <Spinner />
+              ) : (
+                <Check />
+              )
             ) : (
               <div className="w-4 h-4 rounded-full border border-gray-400" />
             )}
@@ -82,45 +86,45 @@ const LoaderCore = ({
                 isPrev
                   ? 'text-green-500'
                   : isCurrent
-                  ? 'text-blue-500 text-xl'
-                  : 'text-gray-400'
+                    ? 'text-blue-500 text-xl'
+                    : 'text-gray-400',
               )}
             >
               {step.text}
             </span>
           </motion.div>
-        )
+        );
       })}
     </motion.div>
-  )
-}
+  );
+};
 
 export const MultiStepLoader = ({
   loadingSteps,
   loading,
-  baseDuration = 1000
+  baseDuration = 1000,
 }: {
-  loadingSteps: Step[]
-  loading: boolean
-  baseDuration?: number
+  loadingSteps: Step[];
+  loading: boolean;
+  baseDuration?: number;
 }) => {
-  const [current, setCurrent] = useState(0)
+  const [current, setCurrent] = useState(0);
 
   // Increment steps while loading, but never above last step
   useEffect(() => {
-    if (!loading) return
-    if (current >= loadingSteps.length - 1) return
-    const randomDelay = baseDuration + Math.floor(Math.random() * 800)
+    if (!loading) return;
+    if (current >= loadingSteps.length - 1) return;
+    const randomDelay = baseDuration + Math.floor(Math.random() * 800);
     const timeout = setTimeout(() => {
-      setCurrent(prev => Math.min(prev + 1, loadingSteps.length - 1))
-    }, randomDelay)
-    return () => clearTimeout(timeout)
-  }, [loading, current, loadingSteps.length, baseDuration])
+      setCurrent((prev) => Math.min(prev + 1, loadingSteps.length - 1));
+    }, randomDelay);
+    return () => clearTimeout(timeout);
+  }, [loading, current, loadingSteps.length, baseDuration]);
 
   // Reset to step 0 when loading is done and overlay unmounts
   useEffect(() => {
-    if (!loading && current !== 0) setCurrent(0)
-  }, [loading])
+    if (!loading && current !== 0) setCurrent(0);
+  }, [loading, current]);
 
   return (
     <AnimatePresence>
@@ -131,9 +135,13 @@ export const MultiStepLoader = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <LoaderCore steps={loadingSteps} current={current} loading={loading} />
+          <LoaderCore
+            steps={loadingSteps}
+            current={current}
+            loading={loading}
+          />
         </motion.div>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};

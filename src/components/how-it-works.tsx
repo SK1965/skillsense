@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { LucideUpload, LucideSettings, LucideRocket } from 'lucide-react'
+import { motion } from 'framer-motion';
+import { LucideUpload, LucideSettings, LucideRocket } from 'lucide-react';
 
 const steps = [
   {
@@ -22,7 +22,7 @@ const steps = [
     description:
       'Receive suggestions to improve your resume, including skill recommendations and rewriting tips.',
   },
-]
+];
 
 export default function HowItWorksSection() {
   return (
@@ -50,11 +50,13 @@ export default function HowItWorksSection() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 {step.title}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{step.description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {step.description}
+              </p>
             </motion.div>
           ))}
         </div>
       </div>
     </section>
-  )
+  );
 }

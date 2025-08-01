@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { JDSchema } from '@/schemas/JDSchema'
-import { z } from 'zod'
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { JDSchema } from '@/schemas/JDSchema';
+import { z } from 'zod';
 import {
   Form,
   FormControl,
@@ -12,18 +12,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import { useRouter } from 'next/navigation'
-import { MultiStepLoader } from '@/components/ui/multi-step-loader'
-import { useResumeStore } from '@/stores/resumeStore'
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { MultiStepLoader } from '@/components/ui/multi-step-loader';
+import { useResumeStore } from '@/stores/resumeStore';
 
 // Type inference from schema
-type ResumeJDFormValues = z.infer<typeof JDSchema>
+type ResumeJDFormValues = z.infer<typeof JDSchema>;
 
 const loadingSteps = [
   { text: 'Uploading your resume...' },
@@ -32,65 +32,59 @@ const loadingSteps = [
   { text: 'Matching skills and experience...' },
   { text: 'Generating smart suggestions...' },
   { text: 'Finalizing report...' },
-]
+];
 
 export default function ResumeJDForm() {
   const form = useForm<ResumeJDFormValues>({
     resolver: zodResolver(JDSchema),
-  })
+  });
 
-  const router = useRouter()
-  const [loader, setLoader] = useState(false)
+  const router = useRouter();
+  const [loader, setLoader] = useState(false);
 
-  const {
-    resume,
-    jd,
-    setResume,
-    setJD,
-    reset: resetStore,
-  } = useResumeStore()
+  const { resume, jd, setResume, setJD } = useResumeStore();
 
   const [fileName, setFileName] = useState<string | null>(
-    resume ? resume.name : null
-  )
+    resume ? resume.name : null,
+  );
 
   // Initialize form with values from store
   useEffect(() => {
-    form.setValue('jd', jd || '')
+    form.setValue('jd', jd || '');
     if (resume) {
-      form.setValue('resume', [resume])
+      form.setValue('resume', [resume]);
     }
-  }, [jd, resume, form])
+  }, [jd, resume, form]);
 
   const onSubmit = async (values: ResumeJDFormValues) => {
-    setLoader(true)
+    setLoader(true);
 
-    const formData = new FormData()
-    if (values.resume?.[0]) formData.append('resume', values.resume[0])
-    if (values.jd) formData.append('jd', values.jd)
+    const formData = new FormData();
+    if (values.resume?.[0]) formData.append('resume', values.resume[0]);
+    if (values.jd) formData.append('jd', values.jd);
 
     try {
       const response = await axios.post('/api/analyze', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      });
 
-      sessionStorage.setItem('analysisResult', JSON.stringify(response.data))
+      sessionStorage.setItem('analysisResult', JSON.stringify(response.data));
 
       // Save to store
-      setResume(values.resume?.[0]!)
-      setJD(values.jd)
+      if (values.resume?.[0]) setResume(values.resume[0]);
+      setJD(values.jd);
 
-      router.push('/score')
+      router.push('/score');
     } catch (error) {
-      console.error(error)
-      router.push('/error')
+      console.error(error);
+      router.push('/error');
     } finally {
-      setLoader(false)
+      setLoader(false);
     }
-  }
+  };
 
   if (loader) {
-    return <MultiStepLoader loadingSteps={loadingSteps} loading={loader} />
+    return <MultiStepLoader loadingSteps={loadingSteps} loading={loader} />;
   }
 
   return (
@@ -107,7 +101,9 @@ export default function ResumeJDForm() {
             name="resume"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-medium">Upload Resume</FormLabel>
+                <FormLabel className="text-base font-medium">
+                  Upload Resume
+                </FormLabel>
                 <FormControl>
                   <div className="w-full">
                     <label
@@ -145,11 +141,11 @@ export default function ResumeJDForm() {
                       accept=".pdf,.doc,.docx"
                       className="hidden"
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const file = e.target.files?.[0]
+                        const file = e.target.files?.[0];
                         if (file) {
-                          setFileName(file.name)
-                          setResume(file)
-                          field.onChange(e.target.files)
+                          setFileName(file.name);
+                          setResume(file);
+                          field.onChange(e.target.files);
                         }
                       }}
                     />
@@ -169,7 +165,9 @@ export default function ResumeJDForm() {
             name="jd"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-medium">Paste Job Description</FormLabel>
+                <FormLabel className="text-base font-medium">
+                  Paste Job Description
+                </FormLabel>
                 <FormControl>
                   <Textarea
                     rows={8}
@@ -177,12 +175,14 @@ export default function ResumeJDForm() {
                     placeholder="Enter the job description here..."
                     {...field}
                     onChange={(e) => {
-                      setJD(e.target.value)
-                      field.onChange(e)
+                      setJD(e.target.value);
+                      field.onChange(e);
                     }}
                   />
                 </FormControl>
-                <FormDescription>Used to match your resume with this JD</FormDescription>
+                <FormDescription>
+                  Used to match your resume with this JD
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -197,5 +197,5 @@ export default function ResumeJDForm() {
         </form>
       </Form>
     </div>
-  )
+  );
 }

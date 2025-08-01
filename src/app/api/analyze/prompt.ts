@@ -63,4 +63,4 @@ RESUME:
 
 JOB DESCRIPTION:
 {JD_TEXT}
-`.trim()
+`.trim();
