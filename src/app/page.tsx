@@ -96,7 +96,7 @@ export default function Home() {
           </motion.div>
 
           {/* How it works */}
-          <div className="w-full max-w-7xl mt-28">
+          <div className="w-full max-w-7xl mt-2 rounded-3xl">
             <HowItWorksSection />
           </div>
 
