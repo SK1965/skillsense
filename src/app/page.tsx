@@ -70,7 +70,7 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.85 }}
-            className="mt-12 w-full max-w-3xl shadow-lg rounded-xl bg-white dark:bg-neutral-800 p-8"
+            className="mt-12 w-full max-w-3xl shadow-lg rounded-xl bg-white dark:bg-neutral-800 p-2"
           >
             <ResumeJDForm />
           </motion.div>
