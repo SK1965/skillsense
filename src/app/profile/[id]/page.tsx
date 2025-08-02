@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { LogOut, Mail, User } from 'lucide-react';
+import Image from 'next/image';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -35,10 +36,12 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           {avatar ? (
-            <img
+            <Image
+              height={56}
+              width={56}
               src={avatar}
               alt="User avatar"
-              className="h-14 w-14 rounded-full object-cover border border-neutral-300 dark:border-neutral-700"
+              className=" h-14 rounded-full object-cover border border-neutral-300 dark:border-neutral-700"
             />
           ) : (
             <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl font-semibold">
