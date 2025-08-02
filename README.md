@@ -1,5 +1,3 @@
-
-
 # 🚀 AI Resume & JD Analyzer
 
 > ✨ Upload your resume and job description to instantly analyze skill match, missing keywords, and get AI-generated improvement suggestions — powered by Gemini Pro (Google GenAI) ✨
@@ -10,16 +8,16 @@
 
 ## 📌 Features
 
-* ✅ Upload resume in PDF, DOC, or DOCX format
-* ✅ Paste or upload job description
-* ✅ Analyze skill match percentage
-* ✅ See matched vs. missing skills
-* ✅ Get AI-generated suggestions to improve resume
-* ✅ Extra tips to make your resume stand out
-* ✅ Mobile-friendly, accessible design
-* ✅ Animated multi-step loader for better UX
-* ✅ Built with **Next.js 14 (App Router)** + **Zustand + TailwindCSS + TypeScript**
-* ✅ Powered by **Google Gemini Pro** (via `@google/genai`)
+- ✅ Upload resume in PDF, DOC, or DOCX format
+- ✅ Paste or upload job description
+- ✅ Analyze skill match percentage
+- ✅ See matched vs. missing skills
+- ✅ Get AI-generated suggestions to improve resume
+- ✅ Extra tips to make your resume stand out
+- ✅ Mobile-friendly, accessible design
+- ✅ Animated multi-step loader for better UX
+- ✅ Built with **Next.js 14 (App Router)** + **Zustand + TailwindCSS + TypeScript**
+- ✅ Powered by **Google Gemini Pro** (via `@google/genai`)
 
 ---
 
@@ -94,25 +92,23 @@ npm run dev
 
 We use **Google Gemini Pro (gemini-2.5-flash)** to:
 
-* Parse and analyze resume text
-* Compare against job description
-* Return structured JSON with:
-
-  * Match score
-  * Skills matched/missing
-  * Suggestions
-  * Extra edge recommendations
-
+- Parse and analyze resume text
+- Compare against job description
+- Return structured JSON with:
+  - Match score
+  - Skills matched/missing
+  - Suggestions
+  - Extra edge recommendations
 
 ---
 
 ## ✨ Future Enhancements
 
-* [ ] AI-generated improved resume
-* [ ] Cover letter generator
-* [ ] Downloadable PDF reports
-* [ ] Resume editor with inline suggestions
-* [ ] Skill gap roadmap generator
+- [ ] AI-generated improved resume
+- [ ] Cover letter generator
+- [ ] Downloadable PDF reports
+- [ ] Resume editor with inline suggestions
+- [ ] Skill gap roadmap generator
 
 ---
 
@@ -120,8 +116,8 @@ We use **Google Gemini Pro (gemini-2.5-flash)** to:
 
 Made with ❤️ by [sk1965](https://github.com/SK1965)
 
-* LinkedIn: [shivakumar kamate](https://linkedin.com/in/shivakumar-kamate)
-* GitHub: [sk1965](https://github.com/SK1965)
+- LinkedIn: [shivakumar kamate](https://linkedin.com/in/shivakumar-kamate)
+- GitHub: [sk1965](https://github.com/SK1965)
 
 ---
 

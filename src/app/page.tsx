@@ -7,7 +7,7 @@ import { cancelFrame, frame } from 'motion';
 import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards';
 import { feedbackItems } from '@/data/feedbackData';
 import HowItWorksSection from '@/components/how-it-works';
-import { Navbar } from '@/components/navbar';
+import Navbar from '@/components/navbar';
 import ResumeJDForm from '@/components/resume-jd-form';
 import Image from 'next/image';
 export default function Home() {
@@ -96,7 +96,7 @@ export default function Home() {
           </motion.div>
 
           {/* How it works */}
-          <div className="w-full max-w-7xl mt-2 rounded-3xl">
+          <div className="w-full max-w-7xl mt-28">
             <HowItWorksSection />
           </div>
 

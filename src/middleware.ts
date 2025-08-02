@@ -7,7 +7,8 @@ export function middleware(request: NextRequest) {
   if (
     request.nextUrl.pathname === '/' ||
     request.nextUrl.pathname === '/score' ||
-    request.nextUrl.pathname === '/error'
+    request.nextUrl.pathname === '/auth' ||
+    request.nextUrl.pathname !== '/error'
   ) {
     return NextResponse.next();
   }
