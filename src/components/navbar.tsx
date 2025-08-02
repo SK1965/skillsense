@@ -15,7 +15,7 @@ export default function Navbar() {
   const profileBtnRef = useRef<HTMLButtonElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // Close menu on escape, click outside
+  // Close menu on escape, click outside - profile dropdown
   useEffect(() => {
     function handleClick(e: MouseEvent | globalThis.MouseEvent) {
       if (
@@ -52,26 +52,25 @@ export default function Navbar() {
     email && email.length > 0 ? email[0].toUpperCase() : 'U';
 
   return (
-    <header className="sticky top-0 z-40 w-full px-4 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/90 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full px-4 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto max-w-7xl flex items-center justify-between">
         {/* Logo & Brand */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 grid place-content-center ring-2 ring-purple-200 group-hover:scale-105 transition-transform" />
-          <span className="text-xl font-bold text-black dark:text-white tracking-tight">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 grid place-content-center ring-2 ring-purple-200 group-hover:scale-110 transition-transform duration-300" />
+          <span className="text-xl font-bold text-black dark:text-white tracking-tight select-none">
             SkillSense
           </span>
         </Link>
 
         {/* Desktop Menu */}
-        <nav className="hidden md:flex items-center gap-7">
+        <nav className="hidden md:flex items-center gap-8">
           <NavLink href="/#how-it-works">How It Works</NavLink>
-          {/* Only show dashboard/profile if logged in */}
           {user && <NavLink href="/dashboard">Dashboard</NavLink>}
 
           {!user ? (
             <Link
               href="/auth"
-              className="px-5 py-2 ml-4 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition"
+              className="ml-6 px-6 py-2 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition select-none"
             >
               Login
             </Link>
@@ -80,21 +79,23 @@ export default function Navbar() {
               <button
                 ref={profileBtnRef}
                 onClick={() => setProfileOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition group"
+                className="flex items-center gap-3 rounded-full px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition group select-none"
                 aria-haspopup="menu"
                 aria-expanded={profileOpen}
                 aria-controls="profile-menu"
                 type="button"
               >
-                <span className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 grid place-content-center text-white font-bold text-sm shadow-inner">
+                <span className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 grid place-content-center text-white font-bold text-sm shadow-inner select-none">
                   {getInitials(user.email)}
                 </span>
-                <span className="text-sm text-gray-700 dark:text-white font-medium">
+                <span className="text-sm text-gray-700 dark:text-white font-medium truncate max-w-[120px]">
                   {user.email?.split('@')[0] ?? ''}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`w-4 h-4 ml-1 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 ml-1 transition-transform duration-300 ${
+                    profileOpen ? 'rotate-180' : ''
+                  }`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -113,27 +114,27 @@ export default function Navbar() {
                 <div
                   ref={profileMenuRef}
                   id="profile-menu"
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-lg py-2 z-50 animate-fade-in"
+                  className="absolute right-0 mt-2 w-52 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-lg py-2 z-50 animate-fade-in"
                   tabIndex={-1}
                   role="menu"
                   aria-label="User menu"
                 >
                   <Link
                     href="/profile"
-                    className="block px-5 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition"
+                    className="block px-6 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition select-none"
                     onClick={() => setProfileOpen(false)}
                     role="menuitem"
                   >
-                    <User className="inline-block mr-2 w-4 h-4" />
+                    <User className="inline-block mr-2 w-4 h-4 stroke-2" />
                     Profile
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-5 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition"
+                    className="w-full text-left px-6 py-3 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition select-none"
                     role="menuitem"
                     type="button"
                   >
-                    <LogOut className="inline-block mr-2 w-4 h-4" />
+                    <LogOut className="inline-block mr-2 w-4 h-4 stroke-2" />
                     Logout
                   </button>
                 </div>
@@ -144,8 +145,10 @@ export default function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+          className="md:hidden p-3 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 active:scale-95 transition transform"
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+          aria-haspopup="true"
           onClick={() => setMobileOpen((v) => !v)}
           type="button"
         >
@@ -159,20 +162,34 @@ export default function Navbar() {
 
       {/* Mobile Dropdown */}
       {mobileOpen && (
-        <div className="md:hidden mt-2 px-3 pb-4 pt-1 space-y-2 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-neutral-900 rounded-b-xl shadow animate-slide-down">
-          <NavLink href="/#how-it-works" onClick={() => setMobileOpen(false)}>
+        <nav
+          className="md:hidden fixed top-[58px] left-0 right-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-gray-800 shadow-lg z-50 rounded-b-xl max-h-[calc(100vh-58px)] overflow-y-auto animate-slide-down"
+          role="menu"
+          aria-label="Mobile menu"
+        >
+          <NavLink
+            href="/#how-it-works"
+            onClick={() => setMobileOpen(false)}
+            className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 select-none"
+          >
             How It Works
           </NavLink>
+
           {user && (
-            <NavLink href="/dashboard" onClick={() => setMobileOpen(false)}>
+            <NavLink
+              href="/dashboard"
+              onClick={() => setMobileOpen(false)}
+              className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 select-none"
+            >
               Dashboard
             </NavLink>
           )}
+
           {!user ? (
             <Link
               href="/auth"
-              className="block text-base font-medium py-2"
               onClick={() => setMobileOpen(false)}
+              className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-semibold text-black dark:text-white bg-gray-100 dark:bg-neutral-800 rounded-b-xl hover:bg-gray-200 dark:hover:bg-neutral-700 select-none"
             >
               Login
             </Link>
@@ -180,41 +197,45 @@ export default function Navbar() {
             <>
               <Link
                 href="/profile"
-                className="block text-base font-medium py-2"
                 onClick={() => setMobileOpen(false)}
+                className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 select-none"
               >
                 Profile
               </Link>
               <button
                 onClick={handleLogout}
-                className="block text-base font-medium text-red-600 py-2 w-full text-left"
                 type="button"
+                className="w-full text-left px-6 py-4 text-lg font-semibold text-red-600 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-b-xl select-none"
               >
                 Logout
               </button>
             </>
           )}
-        </div>
+        </nav>
       )}
     </header>
   );
 }
 
-// Utility: NavLink for unified link style, with optional onClick
+// Utility: NavLink for unified link style, with optional onClick & className override
 function NavLink({
   href,
   children,
   onClick,
+  className,
 }: {
   href: string;
   children: React.ReactNode;
   onClick?: () => void;
+  className?: string;
 }) {
   return (
     <Link
       href={href}
-      className="text-sm text-gray-700 dark:text-gray-300 font-medium hover:underline transition"
       onClick={onClick}
+      className={`text-sm md:text-base text-gray-700 dark:text-gray-300 font-medium hover:underline transition select-none ${
+        className ?? ''
+      }`}
     >
       {children}
     </Link>
