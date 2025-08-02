@@ -29,19 +29,19 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    
+
     // Continue processing the resumeText or pass it to other functions
 
     const result = await generate(resumeText, formData.get('jd') as string);
 
     //save the data if signed in
     await storeResumeData({
-      file : resumeFile ,
-      fileBuffer :resumeBuffer,
+      file: resumeFile,
+      fileBuffer: resumeBuffer,
       fileName: resumeFile.name,
       jd: formData.get('jd') as string,
-      result
-    })
+      result,
+    });
 
     //send the result back as JSON
     return NextResponse.json(result, { status: 200 });

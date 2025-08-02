@@ -174,7 +174,6 @@ export default function Navbar() {
             How It Works
           </NavLink>
 
-
           {!user ? (
             <Link
               href="/auth"

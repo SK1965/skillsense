@@ -20,7 +20,9 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-700 dark:text-gray-300">Redirecting to login...</p>
+        <p className="text-gray-700 dark:text-gray-300">
+          Redirecting to login...
+        </p>
       </div>
     );
   }
