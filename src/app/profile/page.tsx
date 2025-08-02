@@ -4,12 +4,12 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { LogOut, Mail, User } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
 
-  // Redirect to /auth if no user is logged in
   useEffect(() => {
     if (!user) {
       router.push('/auth');
@@ -19,38 +19,54 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-700 dark:text-gray-300">
-          Redirecting to login...
-        </p>
+        <p className="text-gray-700 dark:text-gray-300">Redirecting to login...</p>
       </div>
     );
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-6 dark:text-white">Your Profile</h1>
+    <main className="min-h-screen bg-gradient-to-br from-white to-neutral-100 dark:from-neutral-900 dark:to-neutral-950 py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl font-semibold">
+            {user.email?.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-800 dark:text-white">
+              Welcome back,
+            </h1>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              Manage your resume analyses & account
+            </p>
+          </div>
+        </div>
 
-      <section className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-xl p-6 shadow">
-        <p className="text-gray-800 dark:text-gray-200 mb-2">
-          <strong>Email:</strong> {user.email}
-        </p>
+        {/* Profile Card */}
+        <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-lg p-6 space-y-4">
+          <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
+            <Mail className="w-5 h-5" />
+            <span className="text-sm break-all">{user.email}</span>
+          </div>
 
-        {/* You can add other profile info here, fetched from your DB if you store more */}
+          {/* Optional future data like name, role, etc. */}
+          <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
+            <User className="w-5 h-5" />
+            <span className="text-sm">User ID: {user.id}</span>
+          </div>
 
-        {/* Example: Update password, display name, or logout button */}
-
-        {/* Logout */}
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut();
-            router.push('/auth');
-          }}
-          className="mt-6 rounded bg-red-600 hover:bg-red-700 text-white py-2 px-4 transition"
-          type="button"
-        >
-          Logout
-        </button>
-      </section>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              router.push('/auth');
+            }}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </section>
+      </div>
     </main>
   );
 }
