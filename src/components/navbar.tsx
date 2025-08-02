@@ -175,15 +175,6 @@ export default function Navbar() {
             How It Works
           </NavLink>
 
-          {user && (
-            <NavLink
-              href="/dashboard"
-              onClick={() => setMobileOpen(false)}
-              className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 select-none"
-            >
-              Dashboard
-            </NavLink>
-          )}
 
           {!user ? (
             <Link
