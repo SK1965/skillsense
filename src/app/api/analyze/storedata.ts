@@ -43,7 +43,9 @@ export async function storeResumeData({
     );
     return;
   }
-
+  
+  console.log('[storeResumeData] ✅ Session retrieved successfully:', session);
+  
   if (!session?.user) {
     console.log('[storeResumeData] ⚠️ No user session found. Aborting upload.');
     return;
