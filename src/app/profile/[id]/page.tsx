@@ -24,17 +24,31 @@ export default function ProfilePage() {
     );
   }
 
+  // Extract user metadata with safe fallbacks
+  const name = user.user_metadata?.name || user.email;
+  const avatar = user.user_metadata?.avatar_url;
+  const email = user.email;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-white to-neutral-100 dark:from-neutral-900 dark:to-neutral-950 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl font-semibold">
-            {user.email?.charAt(0).toUpperCase()}
-          </div>
+          {avatar ? (
+            <img
+              src={avatar}
+              alt="User avatar"
+              className="h-14 w-14 rounded-full object-cover border border-neutral-300 dark:border-neutral-700"
+            />
+          ) : (
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl font-semibold">
+              {email?.charAt(0).toUpperCase()}
+            </div>
+          )}
+
           <div>
             <h1 className="text-2xl font-bold text-neutral-800 dark:text-white">
-              Welcome back,
+              Welcome, {name}
             </h1>
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
               Manage your resume analyses & account
@@ -46,10 +60,9 @@ export default function ProfilePage() {
         <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-lg p-6 space-y-4">
           <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
             <Mail className="w-5 h-5" />
-            <span className="text-sm break-all">{user.email}</span>
+            <span className="text-sm break-all">{email}</span>
           </div>
 
-          {/* Optional future data like name, role, etc. */}
           <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
             <User className="w-5 h-5" />
             <span className="text-sm">User ID: {user.id}</span>

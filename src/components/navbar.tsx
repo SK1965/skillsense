@@ -65,7 +65,6 @@ export default function Navbar() {
         {/* Desktop Menu */}
         <nav className="hidden md:flex items-center gap-8">
           <NavLink href="/#how-it-works">How It Works</NavLink>
-          {user && <NavLink href="/dashboard">Dashboard</NavLink>}
 
           {!user ? (
             <Link
@@ -120,7 +119,7 @@ export default function Navbar() {
                   aria-label="User menu"
                 >
                   <Link
-                    href="/profile"
+                    href={`/profile/${user.id}`}
                     className="block px-6 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition select-none"
                     onClick={() => setProfileOpen(false)}
                     role="menuitem"
@@ -187,7 +186,7 @@ export default function Navbar() {
           ) : (
             <>
               <Link
-                href="/profile"
+                href={`/profile/${user.id}`}
                 onClick={() => setMobileOpen(false)}
                 className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 select-none"
               >
