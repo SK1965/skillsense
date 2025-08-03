@@ -32,12 +32,17 @@ export default function AuthForm() {
     const { error } = await authFn(data);
 
     if (error) setError(error.message);
-    else router.push('/dashboard');
+    else router.replace('/');
     setLoading(false);
   };
 
   const handleOAuth = async (provider: 'google' | 'github') => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
     if (error) setError(error.message);
   };
 
