@@ -56,7 +56,7 @@ export default async function generate(resumeText: string, jdText: string) {
 
     const text = (await result.text) as string;
     const validated = ResultSchema.parse(JSON.parse(text));
-    console.log(validated);
+    // console.log(validated);
 
     return validated;
   } catch (error) {

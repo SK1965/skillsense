@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pdf from 'pdf-parse';
 import generate from './generate';
-import { storeResumeData } from './storedata';
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,14 +34,14 @@ export async function POST(req: NextRequest) {
     const result = await generate(resumeText, formData.get('jd') as string);
 
     //save the data if signed in
-    await storeResumeData({
+    /* await storeResumeData({
       file: resumeFile,
       fileBuffer: resumeBuffer,
       fileName: resumeFile.name,
       jd: formData.get('jd') as string,
       result,
     });
-
+   */
     //send the result back as JSON
     return NextResponse.json(result, { status: 200 });
   } catch (err: unknown) {

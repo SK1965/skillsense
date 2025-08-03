@@ -21,6 +21,8 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { MultiStepLoader } from '@/components/ui/multi-step-loader';
 import { useResumeStore } from '@/stores/resumeStore';
+import { useAuth } from '@/context/AuthContext';
+import { saveAnalysisToSupabase } from '@/lib/saveAnalysisToSupabase';
 
 // Inferred form type
 type ResumeJDFormValues = z.infer<typeof JDSchema>;
@@ -45,6 +47,7 @@ export default function ResumeJDForm() {
   const [fileName, setFileName] = useState<string | null>(
     resume ? resume.name : null,
   );
+  const { user } = useAuth();
 
   useEffect(() => {
     form.setValue('jd', jd || '');
@@ -62,10 +65,18 @@ export default function ResumeJDForm() {
       sessionStorage.setItem('analysisResult', JSON.stringify(response.data));
       if (values.resume?.[0]) setResume(values.resume[0]);
       setJD(values.jd);
+
+      // If user is signed in, save the analysis to Supabase
+      if (values.resume?.[0] && user?.id) {
+        await saveAnalysisToSupabase({
+          file: values.resume[0],
+          result: response.data,
+          userId: user.id,
+        });
+      }
       router.push('/score');
     } catch (error) {
       console.error(error);
-      router.push('/error');
     } finally {
       setLoader(false);
     }
