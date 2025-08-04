@@ -15,23 +15,48 @@ export async function saveAnalysisToSupabase({
   userId: string;
 }) {
   try {
-    // Upload file to Supabase Storage
     const filePath = `user-${userId}/${file.name}`;
-    const { error: fileError } = await supabase.storage
+    let resumeUrl: string;
+
+    // First, check if file already exists
+    const { data: existingFile} = await supabase.storage
       .from('resumes')
-      .upload(filePath, file, {
-        contentType: file.type,
+      .list(`user-${userId}`, {
+        limit: 1000,
+        search: file.name
       });
 
-    if (fileError) throw fileError;
+    const fileExists = existingFile?.some(f => f.name === file.name);
 
-    // Get the public URL of the uploaded file
-    const { data: publicUrlData } = supabase.storage
-      .from('resumes')
-      .getPublicUrl(filePath);
+    if (fileExists) {
+      // File exists, get the existing public URL
+      console.log('[INFO] File already exists, using existing URL...');
+      const { data: publicUrlData } = supabase.storage
+        .from('resumes')
+        .getPublicUrl(filePath);
 
-    const resumeUrl = publicUrlData?.publicUrl;
-    if (!resumeUrl) throw new Error('Failed to get public URL');
+      resumeUrl = publicUrlData?.publicUrl;
+      if (!resumeUrl) throw new Error('Failed to get public URL for existing file');
+      
+    } else {
+      // File doesn't exist, upload it
+      console.log('[INFO] File does not exist, uploading...');
+      const { error: fileError } = await supabase.storage
+        .from('resumes')
+        .upload(filePath, file, {
+          contentType: file.type,
+        });
+
+      if (fileError) throw fileError;
+
+      // Get the public URL of the newly uploaded file
+      const { data: publicUrlData } = supabase.storage
+        .from('resumes')
+        .getPublicUrl(filePath);
+
+      resumeUrl = publicUrlData?.publicUrl;
+      if (!resumeUrl) throw new Error('Failed to get public URL for uploaded file');
+    }
 
     // Insert analysis data into DB
     const { error: insertError } = await supabase.from('analyses').insert([
