@@ -63,9 +63,9 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4 mb-8">
           {avatar ? (
             <Image
+              src={avatar}
               height={56}
               width={56}
-              src={avatar}
               alt="User avatar"
               className="h-14 rounded-full object-cover border border-neutral-300 dark:border-neutral-700"
             />

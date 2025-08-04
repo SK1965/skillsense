@@ -26,24 +26,27 @@ export async function saveAnalysisToSupabase({
   result,
   userId,
 }: SaveAnalysisArgs): Promise<SaveAnalysisResponse> {
-  const BUCKET = 'resumes'; // Public bucket
-  const filePath = `user-${userId}/${file.name}`;
+  const BUCKET = 'resumes'; // public bucket name
+  const filePath = `user-${userId}/${file.name}`; // per-user folder
 
   try {
-    /* 1. Upload ----------------------------------------------------- */
+    /* 1. Upload (skip if object already exists) -------------------- */
     const { error: uploadErr } = await supabase.storage
       .from(BUCKET)
-      .upload(filePath, file, { contentType: file.type });
+      .upload(filePath, file, {
+        cacheControl: '3600', // cache control header (optional)
+        upsert: false, // don’t overwrite existing object
+      });
 
     if (uploadErr) {
-      // Ignore “already exists” – we’ll reuse the existing file
       const alreadyExists =
         uploadErr.message.includes('already exists') ||
         uploadErr.message.includes('The resource already exists');
       if (!alreadyExists) throw uploadErr;
+      // If the object exists we simply reuse it.
     }
 
-    /* 2. Get PUBLIC URL (never expires) ----------------------------- */
+    /* 2. Obtain the public URL (never expires) --------------------- */
     const { data: publicUrlData } = supabase.storage
       .from(BUCKET)
       .getPublicUrl(filePath);
@@ -51,7 +54,8 @@ export async function saveAnalysisToSupabase({
     const resumeUrl = publicUrlData?.publicUrl;
     if (!resumeUrl) throw new Error('Failed to obtain public URL');
 
-    /* 3. Persist analysis row -------------------------------------- */
+    console.log('url  : ', resumeUrl);
+    /* 3. Persist the analysis row ---------------------------------- */
     const { error: insertErr } = await supabase.from('analyses').insert([
       {
         user_id: userId,
