@@ -1,52 +1,58 @@
 // lib/saveAnalysisToSupabase.ts
-import { ResultSchema } from '@/schemas/ResultSchema';
 import { supabase } from './supabase';
+import { ResultSchema } from '@/schemas/ResultSchema';
 import { z } from 'zod';
 
+/* ------------------------------------------------------------------ */
+/* Types                                                              */
+/* ------------------------------------------------------------------ */
+type SaveAnalysisArgs = {
+  jd: string;
+  file: File;
+  result: z.infer<typeof ResultSchema>;
+  userId: string;
+};
+
+type SaveAnalysisResponse =
+  | { success: true; resumeUrl: string }
+  | { success: false; error: unknown };
+
+/* ------------------------------------------------------------------ */
+/* Main helper                                                        */
+/* ------------------------------------------------------------------ */
 export async function saveAnalysisToSupabase({
   jd,
   file,
   result,
   userId,
-}: {
-  jd: string;
-  file: File;
-  result: z.infer<typeof ResultSchema>;
-  userId: string;
-}) {
-  try {
-    const filePath = `user-${userId}/${file.name}`;
-    
-    // Try to upload the file first
-    const { error: fileError } = await supabase.storage
-      .from('resumes')
-      .upload(filePath, file, {
-        contentType: file.type,
-      });
+}: SaveAnalysisArgs): Promise<SaveAnalysisResponse> {
+  const BUCKET = 'resumes'; // Public bucket
+  const filePath = `user-${userId}/${file.name}`;
 
-    // Handle different scenarios
-    if (fileError) {
-      if (fileError.message.includes('already exists') || fileError.message.includes('The resource already exists')) {
-        console.log('[INFO] File already exists, using existing file...');
-        // Continue to get the URL of existing file
-      } else {
-        // If it's a different error, throw it
-        throw fileError;
-      }
-    } else {
-      console.log('[INFO] File uploaded successfully...');
+  try {
+    /* 1. Upload ----------------------------------------------------- */
+    const { error: uploadErr } = await supabase.storage
+      .from(BUCKET)
+      .upload(filePath, file, { contentType: file.type });
+
+    if (uploadErr) {
+      // Ignore “already exists” – we’ll reuse the existing file
+      const alreadyExists =
+        uploadErr.message.includes('already exists') ||
+        uploadErr.message.includes('The resource already exists');
+      if (!alreadyExists) throw uploadErr;
     }
 
-    // Get the public URL (works for both existing and newly uploaded files)
+    /* 2. Get PUBLIC URL (never expires) ----------------------------- */
     const { data: publicUrlData } = supabase.storage
-      .from('resumes')
+      .from(BUCKET)
       .getPublicUrl(filePath);
 
     const resumeUrl = publicUrlData?.publicUrl;
-    if (!resumeUrl) throw new Error('Failed to get public URL');
+    if (!resumeUrl) throw new Error('Failed to obtain public URL');
 
-    // Insert analysis data into DB
-    const { error: insertError } = await supabase.from('analyses').insert([
+    /* 3. Persist analysis row -------------------------------------- */
+    const { error: insertErr } = await supabase.from('analyses').insert([
       {
         user_id: userId,
         resume_name: file.name,
@@ -59,12 +65,11 @@ export async function saveAnalysisToSupabase({
       },
     ]);
 
-    if (insertError) throw insertError;
+    if (insertErr) throw insertErr;
 
-    console.log('[SUCCESS] Analysis saved successfully!');
-    return { success: true };
-  } catch (err) {
-    console.error('[SUPABASE ANALYSIS ERROR]', err);
-    return { success: false, error: err };
+    return { success: true, resumeUrl };
+  } catch (error) {
+    console.error('[SUPABASE ANALYSIS ERROR]', error);
+    return { success: false, error };
   }
 }
