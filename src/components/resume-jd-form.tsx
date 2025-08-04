@@ -68,7 +68,7 @@ export default function ResumeJDForm() {
 
       // If user is signed in, save the analysis to Supabase
       if (values.resume?.[0] && user?.id) {
-        await saveAnalysisToSupabase({
+        saveAnalysisToSupabase({
           jd,
           file: values.resume[0],
           result: response.data,

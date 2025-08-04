@@ -54,7 +54,6 @@ export async function saveAnalysisToSupabase({
     const resumeUrl = publicUrlData?.publicUrl;
     if (!resumeUrl) throw new Error('Failed to obtain public URL');
 
-    console.log('url  : ', resumeUrl);
     /* 3. Persist the analysis row ---------------------------------- */
     const { error: insertErr } = await supabase.from('analyses').insert([
       {
