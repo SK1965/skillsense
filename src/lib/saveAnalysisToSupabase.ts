@@ -1,19 +1,17 @@
 // lib/saveAnalysisToSupabase.ts
+import { ResultSchema } from '@/schemas/ResultSchema';
 import { supabase } from './supabase';
+import { z } from 'zod';
 
 export async function saveAnalysisToSupabase({
+  jd,
   file,
   result,
   userId,
 }: {
+  jd: string;
   file: File;
-  result: {
-    score: number;
-    matchedSkills: string[];
-    missingSkills: string[];
-    suggestions: string;
-    jobTitle?: string;
-  };
+  result: z.infer<typeof ResultSchema>;
   userId: string;
 }) {
   try {
@@ -41,9 +39,9 @@ export async function saveAnalysisToSupabase({
         user_id: userId,
         resume_name: file.name,
         resume_url: resumeUrl,
-        job_title: result.jobTitle || null,
-        match_score: result.score,
-        skills_matched: result.matchedSkills,
+        job_title: jd || null,
+        match_score: result.matchScore,
+        skills_matched: result.skillsMatched,
         skills_missing: result.missingSkills,
         ai_suggestions: result.suggestions,
       },

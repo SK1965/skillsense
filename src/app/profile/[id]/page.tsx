@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LogOut, Mail, User, FileText, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { History } from '@/types/history';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
-  
+
   // State for analysis history
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<History[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -124,7 +125,10 @@ export default function ProfilePage() {
           ) : (
             <ul className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {history.map((item) => (
-                <li key={item.id} className="py-3 flex flex-col sm:flex-row sm:justify-between gap-2">
+                <li
+                  key={item.id}
+                  className="py-3 flex flex-col sm:flex-row sm:justify-between gap-2"
+                >
                   <div className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                     <FileText className="w-4 h-4" />
                     <a
