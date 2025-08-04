@@ -16,47 +16,34 @@ export async function saveAnalysisToSupabase({
 }) {
   try {
     const filePath = `user-${userId}/${file.name}`;
-    let resumeUrl: string;
-
-    // First, check if file already exists
-    const { data: existingFile} = await supabase.storage
+    
+    // Try to upload the file first
+    const { error: fileError } = await supabase.storage
       .from('resumes')
-      .list(`user-${userId}`, {
-        limit: 1000,
-        search: file.name
+      .upload(filePath, file, {
+        contentType: file.type,
       });
 
-    const fileExists = existingFile?.some(f => f.name === file.name);
-
-    if (fileExists) {
-      // File exists, get the existing public URL
-      console.log('[INFO] File already exists, using existing URL...');
-      const { data: publicUrlData } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(filePath);
-
-      resumeUrl = publicUrlData?.publicUrl;
-      if (!resumeUrl) throw new Error('Failed to get public URL for existing file');
-      
+    // Handle different scenarios
+    if (fileError) {
+      if (fileError.message.includes('already exists') || fileError.message.includes('The resource already exists')) {
+        console.log('[INFO] File already exists, using existing file...');
+        // Continue to get the URL of existing file
+      } else {
+        // If it's a different error, throw it
+        throw fileError;
+      }
     } else {
-      // File doesn't exist, upload it
-      console.log('[INFO] File does not exist, uploading...');
-      const { error: fileError } = await supabase.storage
-        .from('resumes')
-        .upload(filePath, file, {
-          contentType: file.type,
-        });
-
-      if (fileError) throw fileError;
-
-      // Get the public URL of the newly uploaded file
-      const { data: publicUrlData } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(filePath);
-
-      resumeUrl = publicUrlData?.publicUrl;
-      if (!resumeUrl) throw new Error('Failed to get public URL for uploaded file');
+      console.log('[INFO] File uploaded successfully...');
     }
+
+    // Get the public URL (works for both existing and newly uploaded files)
+    const { data: publicUrlData } = supabase.storage
+      .from('resumes')
+      .getPublicUrl(filePath);
+
+    const resumeUrl = publicUrlData?.publicUrl;
+    if (!resumeUrl) throw new Error('Failed to get public URL');
 
     // Insert analysis data into DB
     const { error: insertError } = await supabase.from('analyses').insert([
@@ -74,6 +61,7 @@ export async function saveAnalysisToSupabase({
 
     if (insertError) throw insertError;
 
+    console.log('[SUCCESS] Analysis saved successfully!');
     return { success: true };
   } catch (err) {
     console.error('[SUPABASE ANALYSIS ERROR]', err);
