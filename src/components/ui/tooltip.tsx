@@ -6,15 +6,30 @@ import React, {
   ReactNode,
   FocusEvent,
   MouseEvent,
+  useEffect,
+  cloneElement,
+  isValidElement,
+  ReactElement,
 } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Define proper event handler types
+type EventHandlerProps = {
+  onFocus?: (e: FocusEvent<HTMLElement>) => void;
+  onBlur?: (e: FocusEvent<HTMLElement>) => void;
+  onMouseEnter?: (e: MouseEvent<HTMLElement>) => void;
+  onMouseLeave?: (e: MouseEvent<HTMLElement>) => void;
+};
 
 interface TooltipProps {
   content: ReactNode;
   children: ReactNode;
-  delayMs?: number; // delay before showing tooltip
-  className?: string; // extra classes for tooltip content container
+  delayMs?: number;
+  className?: string;
   placement?: 'top' | 'bottom' | 'left' | 'right';
+  disabled?: boolean;
+  theme?: 'dark' | 'light';
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 export default function Tooltip({
@@ -23,136 +38,207 @@ export default function Tooltip({
   delayMs = 200,
   className = '',
   placement = 'top',
+  disabled = false,
+  theme = 'dark',
+  maxWidth = 'xs',
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
+  const [actualPlacement, setActualPlacement] = useState(placement);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLDivElement | null>(null);
 
-  // Show tooltip after delay
+  // Auto-adjust placement logic (unchanged)
+  useEffect(() => {
+    if (!visible || !tooltipRef.current || !triggerRef.current) return;
+
+    const tooltip = tooltipRef.current;
+    const rect = tooltip.getBoundingClientRect();
+    const viewport = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+    let newPlacement = placement;
+
+    if (placement === 'top' && rect.top < 0) {
+      newPlacement = 'bottom';
+    } else if (placement === 'bottom' && rect.bottom > viewport.height) {
+      newPlacement = 'top';
+    } else if (placement === 'left' && rect.left < 0) {
+      newPlacement = 'right';
+    } else if (placement === 'right' && rect.right > viewport.width) {
+      newPlacement = 'left';
+    }
+
+    if (newPlacement !== actualPlacement) {
+      setActualPlacement(newPlacement);
+    }
+  }, [visible, placement, actualPlacement]);
+
+  // Show/hide handlers
   const handleShow = () => {
+    if (disabled) return;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setVisible(true), delayMs);
   };
 
-  // Immediate hide tooltip
   const handleHide = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setVisible(false);
   };
 
-  // Keyboard accessibility - show on focus, hide on blur
-  const onFocus = (e: FocusEvent<HTMLElement>) => {
-    handleShow();
-    // Check if children is a valid React element and has an onFocus prop,
-    // then safely cast children.props to an object to access onFocus.
-    if (
-      React.isValidElement(children) &&
-      typeof children.props === 'object' &&
-      children.props !== null &&
-      'onFocus' in children.props &&
-      typeof children.props.onFocus === 'function'
-    ) {
-      // Call the original onFocus handler if it exists
-      (children.props.onFocus as React.FocusEventHandler<HTMLElement>)(e);
-    }
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  // Create properly typed event handlers
+  const createEventHandlers = (originalProps: EventHandlerProps = {}) => ({
+    onFocus: (e: FocusEvent<HTMLElement>) => {
+      handleShow();
+      originalProps.onFocus?.(e);
+    },
+    onBlur: (e: FocusEvent<HTMLElement>) => {
+      handleHide();
+      originalProps.onBlur?.(e);
+    },
+    onMouseEnter: (e: MouseEvent<HTMLElement>) => {
+      handleShow();
+      originalProps.onMouseEnter?.(e);
+    },
+    onMouseLeave: (e: MouseEvent<HTMLElement>) => {
+      handleHide();
+      originalProps.onMouseLeave?.(e);
+    },
+  });
+
+  // Theme styles
+  const themeStyles = {
+    dark: {
+      bg: 'bg-gray-900 dark:bg-gray-800',
+      text: 'text-white',
+      border: 'border-gray-900 dark:border-gray-800',
+      arrow: 'bg-gray-900 dark:bg-gray-800',
+    },
+    light: {
+      bg: 'bg-white dark:bg-gray-100',
+      text: 'text-gray-900 dark:text-gray-800',
+      border: 'border-gray-200 dark:border-gray-300',
+      arrow: 'bg-white dark:bg-gray-100',
+    },
   };
 
-  const onBlur = (e: FocusEvent<HTMLElement>) => {
-    handleHide();
-    if (
-      React.isValidElement(children) &&
-      typeof children.props === 'object' &&
-      children.props !== null &&
-      'onBlur' in children.props &&
-      typeof children.props.onBlur === 'function'
-    ) {
-      (children.props.onBlur as React.FocusEventHandler<HTMLElement>)(e); // Safely cast and call
-    }
+  const maxWidthClasses = {
+    xs: 'max-w-xs',
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
   };
 
-  // Mouse events
-  const onMouseEnter = (e: MouseEvent<HTMLElement>) => {
-    handleShow();
-    if (
-      React.isValidElement(children) &&
-      typeof children.props === 'object' &&
-      children.props !== null &&
-      'onMouseEnter' in children.props &&
-      typeof children.props.onMouseEnter === 'function'
-    ) {
-      (children.props.onMouseEnter as React.MouseEventHandler<HTMLElement>)(e); // Safely cast and call
-    }
-  };
-  const onMouseLeave = (e: MouseEvent<HTMLElement>) => {
-    handleHide();
-    if (
-      React.isValidElement(children) &&
-      typeof children.props === 'object' &&
-      children.props !== null &&
-      'onMouseLeave' in children.props &&
-      typeof children.props.onMouseLeave === 'function'
-    ) {
-      (children.props.onMouseLeave as React.MouseEventHandler<HTMLElement>)(e);
-    }
-  };
-
-  // Tooltip position styles based on placement prop
-  // You can extend this for left/right if needed.
   const placementStyles: Record<
     string,
     { container: string; arrow: string; motionOrigin: string }
   > = {
     top: {
       container: 'bottom-full mb-2 left-1/2 transform -translate-x-1/2',
-      arrow: 'top-full left-1/2 -translate-x-1/2 border-t-gray-700',
+      arrow: 'top-full left-1/2 -translate-x-1/2',
       motionOrigin: 'bottom center',
     },
     bottom: {
       container: 'top-full mt-2 left-1/2 transform -translate-x-1/2',
-      arrow: 'bottom-full left-1/2 -translate-x-1/2 border-b-gray-700',
+      arrow: 'bottom-full left-1/2 -translate-x-1/2',
       motionOrigin: 'top center',
     },
     left: {
       container: 'right-full mr-2 top-1/2 transform -translate-y-1/2',
-      arrow: 'right-0 top-1/2 -translate-y-1/2 border-l-gray-700',
-      motionOrigin: 'right center',
+      arrow: 'left-full top-1/2 -translate-y-1/2 -translate-x-1',
+      motionOrigin: 'center right',
     },
     right: {
       container: 'left-full ml-2 top-1/2 transform -translate-y-1/2',
-      arrow: 'left-0 top-1/2 -translate-y-1/2 border-r-gray-700',
-      motionOrigin: 'left center',
+      arrow: 'right-full top-1/2 -translate-y-1/2 translate-x-1',
+      motionOrigin: 'center left',
     },
   };
 
-  // Select styles for current placement
-  const styles = placementStyles[placement] || placementStyles.top;
+  const styles = placementStyles[actualPlacement] || placementStyles.top;
+  const currentTheme = themeStyles[theme];
+
+  if (disabled) {
+    return <>{children}</>;
+  }
+
+  // Enhanced children with proper typing - no more `any`!
+  const enhancedChildren = isValidElement(children)
+    ? cloneElement(
+        children as ReactElement<EventHandlerProps>,
+        createEventHandlers(children.props as EventHandlerProps),
+      )
+    : children;
 
   return (
-    <div
-      className="relative inline-block"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      tabIndex={0} // to make focusable if child is not focusable
-      aria-describedby="tooltip"
-    >
-      {children}
+    <div ref={triggerRef} className="relative inline-block">
+      {enhancedChildren}
 
       <AnimatePresence>
         {visible && (
           <motion.div
-            id="tooltip"
+            ref={tooltipRef}
             role="tooltip"
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.85 }}
-            transition={{ duration: 0.18 }}
+            initial={{
+              opacity: 0,
+              scale: 0.85,
+              y:
+                actualPlacement === 'top'
+                  ? 10
+                  : actualPlacement === 'bottom'
+                    ? -10
+                    : 0,
+            }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{
+              opacity: 0,
+              scale: 0.85,
+              y:
+                actualPlacement === 'top'
+                  ? 10
+                  : actualPlacement === 'bottom'
+                    ? -10
+                    : 0,
+            }}
+            transition={{
+              duration: 0.15,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             style={{ transformOrigin: styles.motionOrigin }}
-            className={`absolute z-50 ${styles.container} max-w-xs px-3 py-1.5 rounded-md bg-gray-800 text-white text-xs shadow-lg ${className}`}
+            className={`
+              absolute z-50 ${styles.container} ${maxWidthClasses[maxWidth]}
+              px-3 py-2 rounded-lg ${currentTheme.bg} ${currentTheme.text} 
+              text-sm font-medium shadow-lg backdrop-blur-sm
+              border ${currentTheme.border}
+              ${className}
+            `}
           >
             {content}
-            {/* Tooltip arrow */}
-            <span
-              className={`absolute w-3 h-3 bg-gray-800 rotate-45 pointer-events-none ${styles.arrow} border-solid border-2 border-gray-800`}
+
+            <div
+              className={`
+                absolute w-2 h-2 ${styles.arrow} ${currentTheme.arrow}
+                rotate-45 border ${currentTheme.border}
+              `}
+              style={{
+                clipPath:
+                  actualPlacement === 'top'
+                    ? 'polygon(0% 0%, 100% 100%, 0% 100%)'
+                    : actualPlacement === 'bottom'
+                      ? 'polygon(0% 0%, 100% 0%, 100% 100%)'
+                      : actualPlacement === 'left'
+                        ? 'polygon(0% 0%, 100% 0%, 0% 100%)'
+                        : 'polygon(100% 0%, 100% 100%, 0% 100%)',
+              }}
               aria-hidden="true"
             />
           </motion.div>

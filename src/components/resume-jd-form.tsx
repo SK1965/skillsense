@@ -16,191 +16,247 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import { MultiStepLoader } from '@/components/ui/multi-step-loader';
 import { useResumeStore } from '@/stores/resumeStore';
 import { useAuth } from '@/context/AuthContext';
 import { saveAnalysisToSupabase } from '@/lib/saveAnalysisToSupabase';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import {
+  Upload,
+  FileText,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Zap,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// Inferred form type
-type ResumeJDFormValues = z.infer<typeof JDSchema>;
-
-const loadingSteps = [
-  { text: 'Uploading your resume...' },
-  { text: 'Reading resume content...' },
-  { text: 'Analyzing job description...' },
-  { text: 'Matching skills and experience...' },
-  { text: 'Generating smart suggestions...' },
-  { text: 'Finalizing report...' },
+type Fields = z.infer<typeof JDSchema>;
+const stepsText = [
+  { text: 'Uploading résumé…' },
+  { text: 'Reading content…' },
+  { text: 'Analyzing JD…' },
+  { text: 'Matching skills…' },
+  { text: 'Generating tips…' },
+  { text: 'Almost done…' },
 ];
 
 export default function ResumeJDForm() {
-  const form = useForm<ResumeJDFormValues>({
-    resolver: zodResolver(JDSchema),
-  });
-
+  const form = useForm<Fields>({ resolver: zodResolver(JDSchema) });
   const router = useRouter();
-  const [loader, setLoader] = useState(false);
-  const { resume, jd, setResume, setJD } = useResumeStore();
-  const [fileName, setFileName] = useState<string | null>(
-    resume ? resume.name : null,
-  );
   const { user } = useAuth();
+  const { resume, jd, setResume, setJD } = useResumeStore();
 
+  /* state */
+  const [busy, setBusy] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  /* hydrate */
   useEffect(() => {
     form.setValue('jd', jd || '');
-    if (resume) form.setValue('resume', [resume]);
+    if (resume) {
+      form.setValue('resume', [resume]);
+      setFileName(resume.name);
+    }
   }, [jd, resume, form]);
 
-  const onSubmit = async (values: ResumeJDFormValues) => {
-    setLoader(true);
-    const formData = new FormData();
-    if (values.resume?.[0]) formData.append('resume', values.resume[0]);
-    if (values.jd) formData.append('jd', values.jd);
+  /* submit ------------------------------------------------------------- */
+  const onSubmit = async (vals: Fields) => {
+    setBusy(true);
+
+    const fd = new FormData();
+    if (vals.resume?.[0]) fd.append('resume', vals.resume[0]);
+    if (vals.jd) fd.append('jd', vals.jd);
 
     try {
-      const response = await axios.post('/api/analyze', formData);
-      sessionStorage.setItem('analysisResult', JSON.stringify(response.data));
-      if (values.resume?.[0]) setResume(values.resume[0]);
-      setJD(values.jd);
+      const { data } = await axios.post('/api/analyze', fd);
+      sessionStorage.setItem('analysisResult', JSON.stringify(data));
+      if (vals.resume?.[0]) setResume(vals.resume[0]);
+      setJD(vals.jd);
 
-      // If user is signed in, save the analysis to Supabase
-      if (values.resume?.[0] && user?.id) {
-        saveAnalysisToSupabase({
-          jd,
-          file: values.resume[0],
-          result: response.data,
+      if (vals.resume?.[0] && user?.id) {
+        await saveAnalysisToSupabase({
+          jd: vals.jd,
+          file: vals.resume[0],
+          result: data,
           userId: user.id,
         });
       }
       router.push('/score');
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setLoader(false);
+      setBusy(false);
     }
   };
 
-  if (loader)
-    return <MultiStepLoader loadingSteps={loadingSteps} loading={loader} />;
+  if (busy) return <MultiStepLoader loadingSteps={stepsText} loading />;
+
+  /* helpers */
+  const handleFile = (file: File) => {
+    setFileName(file.name);
+    setResume(file);
+    form.setValue('resume', [file]);
+  };
 
   return (
-    <div className="w-full max-w-3xl mx-auto rounded-xl border border-neutral-300 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 sm:px-6 md:px-8 py-6 sm:py-8 shadow-xl">
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-6 text-center text-black dark:text-white">
-        Resume & Job Description Analyzer
-      </h2>
+    <div className="rounded-3xl border border-white/20 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-2xl overflow-hidden">
+      {/* top progress bar */}
+      <div className="h-1 bg-gradient-to-r from-blue-600 to-purple-600" />
 
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 sm:space-y-8"
-        >
-          {/* File Upload */}
-          <FormField
-            control={form.control}
-            name="resume"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm sm:text-base font-medium">
-                  Upload Resume
-                </FormLabel>
-                <FormControl>
-                  <div className="w-full">
-                    <label
-                      htmlFor="resume-upload"
-                      className="group flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-4 sm:p-6 cursor-pointer hover:border-blue-500 transition-all text-center bg-neutral-50 dark:bg-neutral-900 hover:bg-blue-50/20"
-                    >
-                      <svg
-                        className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500 group-hover:text-blue-500 transition"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 15.75V19a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 19v-3.25M7.5 10.5L12 6m0 0l4.5 4.5M12 6v12"
-                        />
-                      </svg>
+      <div className="px-8 py-10 sm:px-10">
+        {/* hero badge */}
+        <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600">
+          <Sparkles className="h-8 w-8 text-white" />
+        </div>
 
-                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 group-hover:text-blue-600">
-                        Tap to upload or drag your resume here
-                      </span>
+        <h2 className="text-center text-3xl md:text-4xl font-bold mb-10 bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+          Get Your Match Score
+        </h2>
 
-                      {fileName && (
-                        <p className="text-sm mt-1 text-green-600 dark:text-green-400 font-medium">
-                          Selected: {fileName}
-                        </p>
-                      )}
-                    </label>
-
-                    <Input
-                      id="resume-upload"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      className="hidden"
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setFileName(file.name);
-                          setResume(file);
-                          field.onChange(e.target.files);
+        {/* form */}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
+            {/* upload -------------------------------------------------- */}
+            <FormField
+              control={form.control}
+              name="resume"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-lg font-semibold">
+                    1. Upload Résumé
+                  </FormLabel>
+                  <FormControl>
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOver(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        setDragOver(false);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setDragOver(false);
+                        if (e.dataTransfer.files?.[0]) {
+                          handleFile(e.dataTransfer.files[0]);
+                          field.onChange(e.dataTransfer.files);
                         }
                       }}
-                    />
-                  </div>
-                </FormControl>
-                <FormDescription className="text-xs text-muted-foreground mt-1">
-                  Accepted formats: PDF, DOC, DOCX
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-8 transition
+            ${dragOver ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-900/30' : 'border-slate-300 dark:border-slate-600'}
+          `}
+                    >
+                      <Input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleFile(file);
+                            field.onChange(e.target.files);
+                          }
+                        }}
+                        id="resume-upload"
+                      />
 
-          {/* JD Textarea */}
-          <FormField
-            control={form.control}
-            name="jd"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm sm:text-base font-medium">
-                  Paste Job Description
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    rows={8}
-                    className="resize-none min-h-[10rem] text-sm"
-                    placeholder="Enter the job description here..."
-                    {...field}
-                    onChange={(e) => {
-                      setJD(e.target.value);
-                      field.onChange(e);
-                    }}
-                  />
-                </FormControl>
-                <FormDescription className="text-xs">
-                  Used to match your resume with this JD
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      {fileName ? (
+                        /* When file is selected */
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center"
+                        >
+                          <div className="mx-auto mb-4 grid h-14 w-14 place-content-center rounded-2xl bg-green-500/20">
+                            <FileText className="h-6 w-6 text-green-600" />
+                          </div>
+                          <p className="font-medium text-green-700 dark:text-green-400">
+                            {fileName}
+                          </p>
+                        </motion.div>
+                      ) : (
+                        /* When no file */
+                        <>
+                          <Upload className="h-10 w-10 text-slate-400" />
+                          <span className="text-sm text-slate-600 dark:text-slate-300">
+                            Click or drag to upload PDF/DOC/DOCX
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormDescription className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                    <AlertCircle className="h-4 w-4" />
+                    We never save your résumé unless you choose to.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Submit */}
-          <div className="flex justify-center">
-            <Button
-              type="submit"
-              className="px-6 py-2 text-sm sm:text-base font-medium"
-            >
-              Analyze with AI
-            </Button>
-          </div>
-        </form>
-      </Form>
+            {/* JD ------------------------------------------------------- */}
+            <FormField
+              control={form.control}
+              name="jd"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-lg font-semibold">
+                    2. Paste Job Description
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Textarea
+                        rows={10}
+                        placeholder="Paste the full job description here…"
+                        className="min-h-[10rem] resize-none rounded-2xl border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/60 backdrop-blur-md p-6 text-sm"
+                        {...field}
+                        onChange={(e) => {
+                          setJD(e.target.value);
+                          field.onChange(e);
+                        }}
+                      />
+                      {field.value?.trim() && (
+                        <CheckCircle2 className="absolute top-4 right-4 h-6 w-6 text-green-500" />
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* CTA ------------------------------------------------------ */}
+            <div className="text-center">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-block"
+              >
+                <Button
+                  type="submit"
+                  disabled={!fileName || !form.watch('jd')?.trim()}
+                  className="gap-3 rounded-2xl px-10 py-4 text-lg"
+                >
+                  <Zap className="h-5 w-5" />
+                  Analyze&nbsp;Now
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </motion.div>
+              {!fileName || !form.watch('jd')?.trim() ? (
+                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                  Upload a résumé and paste a JD to enable the button.
+                </p>
+              ) : null}
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }

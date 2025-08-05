@@ -1,7 +1,7 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import React, { useCallback, useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export const InfiniteMovingCards = ({
   items,
@@ -10,11 +10,7 @@ export const InfiniteMovingCards = ({
   pauseOnHover = true,
   className,
 }: {
-  items: {
-    quote: string;
-    name: string;
-    title: string;
-  }[];
+  items: { quote: string; name: string; title: string }[];
   direction?: 'left' | 'right';
   speed?: 'fast' | 'normal' | 'slow';
   pauseOnHover?: boolean;
@@ -24,58 +20,47 @@ export const InfiniteMovingCards = ({
   const scrollerRef = React.useRef<HTMLUListElement>(null);
 
   const [start, setStart] = useState(false);
-  const getDirection = useCallback(() => {
-    if (containerRef.current) {
-      if (direction === 'left') {
-        containerRef.current.style.setProperty(
-          '--animation-direction',
-          'forwards',
-        );
-      } else {
-        containerRef.current.style.setProperty(
-          '--animation-direction',
-          'reverse',
-        );
-      }
-    }
+
+  /* helpers ------------------------------------------------------------ */
+  const applyDirection = useCallback(() => {
+    if (!containerRef.current) return;
+    containerRef.current.style.setProperty(
+      '--animation-direction',
+      direction === 'left' ? 'forwards' : 'reverse',
+    );
   }, [direction]);
-  const getSpeed = useCallback(() => {
-    if (containerRef.current) {
-      if (speed === 'fast') {
-        containerRef.current.style.setProperty('--animation-duration', '20s');
-      } else if (speed === 'normal') {
-        containerRef.current.style.setProperty('--animation-duration', '40s');
-      } else {
-        containerRef.current.style.setProperty('--animation-duration', '80s');
-      }
-    }
+
+  const applySpeed = useCallback(() => {
+    if (!containerRef.current) return;
+    const duration =
+      speed === 'fast' ? '20s' : speed === 'slow' ? '80s' : '40s';
+    containerRef.current.style.setProperty('--animation-duration', duration);
   }, [speed]);
+
   const addAnimation = useCallback(() => {
-    if (containerRef.current && scrollerRef.current) {
-      const scrollerContent = Array.from(scrollerRef.current.children);
+    if (!(containerRef.current && scrollerRef.current)) return;
 
-      scrollerContent.forEach((item) => {
-        const duplicatedItem = item.cloneNode(true);
-        if (scrollerRef.current) {
-          scrollerRef.current.appendChild(duplicatedItem);
-        }
-      });
+    /* duplicate children so scroll appears infinite */
+    const clones = Array.from(scrollerRef.current.children).map((el) =>
+      el.cloneNode(true),
+    );
+    clones.forEach((clone) => scrollerRef.current!.appendChild(clone));
 
-      getDirection();
-      getSpeed();
-      setStart(true);
-    }
-  }, [getDirection, getSpeed]);
+    applyDirection();
+    applySpeed();
+    setStart(true);
+  }, [applyDirection, applySpeed]);
 
-  useEffect(() => {
-    addAnimation();
-  }, [addAnimation]);
+  /* init --------------------------------------------------------------- */
+  useEffect(() => addAnimation(), [addAnimation]);
 
+  /* view --------------------------------------------------------------- */
   return (
     <div
       ref={containerRef}
       className={cn(
-        'scroller relative z-20 max-w-7xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]',
+        'scroller relative z-20 max-w-7xl overflow-hidden',
+        '[mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]',
         className,
       )}
     >
@@ -87,29 +72,27 @@ export const InfiniteMovingCards = ({
           pauseOnHover && 'hover:[animation-play-state:paused]',
         )}
       >
-        {items.map((item) => (
+        {items.map((t) => (
           <li
-            className="relative w-[350px] max-w-full shrink-0 rounded-2xl border border-b-0 border-zinc-200 bg-[linear-gradient(180deg,#fafafa,#f5f5f5)] px-8 py-6 md:w-[450px] dark:border-zinc-700 dark:bg-[linear-gradient(180deg,#27272a,#18181b)]"
-            key={item.name}
+            key={t.name}
+            className="relative w-[350px] md:w-[450px] max-w-full shrink-0 rounded-2xl
+                       border border-white/20 dark:border-slate-700/40
+                       bg-white/70 dark:bg-slate-800/60 backdrop-blur-md
+                       px-8 py-6 shadow-md transition hover:shadow-lg"
           >
-            <blockquote>
-              <div
-                aria-hidden="true"
-                className="user-select-none pointer-events-none absolute -top-0.5 -left-0.5 -z-1 h-[calc(100%_+_4px)] w-[calc(100%_+_4px)]"
-              ></div>
-              <span className="relative z-20 text-sm leading-[1.6] font-normal text-neutral-800 dark:text-gray-100">
-                {item.quote}
-              </span>
-              <div className="relative z-20 mt-6 flex flex-row items-center">
-                <span className="flex flex-col gap-1">
-                  <span className="text-sm leading-[1.6] font-normal text-neutral-500 dark:text-gray-400">
-                    {item.name}
-                  </span>
-                  <span className="text-sm leading-[1.6] font-normal text-neutral-500 dark:text-gray-400">
-                    {item.title}
-                  </span>
-                </span>
-              </div>
+            <blockquote className="relative z-10">
+              <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-100">
+                {t.quote}
+              </p>
+
+              <footer className="mt-6">
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  {t.name}
+                </div>
+                <div className="text-sm text-slate-500 dark:text-slate-500">
+                  {t.title}
+                </div>
+              </footer>
             </blockquote>
           </li>
         ))}

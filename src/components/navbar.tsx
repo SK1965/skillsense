@@ -1,45 +1,59 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect, MouseEvent, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Menu, X, LogOut, User } from 'lucide-react';
+
+/* Utility: get initial letter from email */
+const initial = (email?: string | null) =>
+  email && email.length > 0 ? email[0].toUpperCase() : 'U';
 
 export default function Navbar() {
   const { user } = useAuth();
   const router = useRouter();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
   const profileBtnRef = useRef<HTMLButtonElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // Close menu on escape, click outside - profile dropdown
+  /* Track scroll for background/shadow effect */
   useEffect(() => {
-    function handleClick(e: MouseEvent | globalThis.MouseEvent) {
+    const onScroll = () => setScrolled(window.scrollY > 5);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  /* Close profile dropdown on outside click or Esc key */
+  useEffect(() => {
+    function handleClick(e: globalThis.MouseEvent) {
       if (
+        profileOpen &&
         profileMenuRef.current &&
         !profileMenuRef.current.contains(e.target as Node) &&
         profileBtnRef.current &&
         !profileBtnRef.current.contains(e.target as Node)
-      ) {
+      )
         setProfileOpen(false);
-      }
     }
-    function handleEsc(e: KeyboardEvent | globalThis.KeyboardEvent) {
-      if (e.key === 'Escape') setProfileOpen(false);
+    function handleEsc(e: globalThis.KeyboardEvent) {
+      if (profileOpen && e.key === 'Escape') setProfileOpen(false);
     }
-    if (profileOpen) {
-      document.addEventListener('mousedown', handleClick);
-      document.addEventListener('keydown', handleEsc);
-    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEsc);
     return () => {
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleEsc);
     };
   }, [profileOpen]);
 
+  /* Logout handler */
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setProfileOpen(false);
@@ -47,29 +61,70 @@ export default function Navbar() {
     router.refresh();
   };
 
-  // Get user initials for avatar
-  const getInitials = (email: string | null | undefined): string =>
-    email && email.length > 0 ? email[0].toUpperCase() : 'U';
+  /* NavLink with active underline and animations */
+  function NavLink({
+    href,
+    children,
+    onClick,
+    active = false,
+    className = '',
+  }: {
+    href: string;
+    children: React.ReactNode;
+    onClick?: () => void;
+    active?: boolean;
+    className?: string;
+  }) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        className={`
+          relative px-4 py-2 font-medium transition-colors
+          ${active ? 'text-blue-600' : 'text-slate-700 dark:text-slate-300'}
+          hover:text-blue-600 dark:hover:text-blue-400
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded
+          before:absolute before:-bottom-1 before:left-0 before:h-[2px]
+          before:bg-blue-600 before:rounded before:transition-all before:duration-300
+          ${active ? 'before:w-full' : 'before:w-0'}
+          ${className}
+        `}
+      >
+        {children}
+      </Link>
+    );
+  }
 
   return (
-    <header className="sticky top-0 z-50 w-full px-4 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-900/95 backdrop-blur-md shadow-sm">
-      <div className="mx-auto max-w-7xl flex items-center justify-between">
-        {/* Logo & Brand */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 grid place-content-center ring-2 ring-purple-200 group-hover:scale-110 transition-transform duration-300" />
-          <span className="text-xl font-bold text-black dark:text-white tracking-tight select-none">
+    <header
+      className={`
+      sticky top-0 z-50 w-full border-b border-white/10 dark:border-slate-800/60
+      backdrop-blur-lg transition-shadow duration-300
+      ${
+        scrolled
+          ? 'bg-white/90 dark:bg-slate-900/95 shadow-lg'
+          : 'bg-white/70 dark:bg-slate-900/80 shadow-sm'
+      }
+      px-4 py-3
+    `}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 select-none">
+          <div className="grid h-8 w-8 place-content-center rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 shadow-inner group-hover:scale-105 transition-transform"></div>
+          <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
             SkillSense
           </span>
         </Link>
 
-        {/* Desktop Menu */}
+        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
-          <NavLink href="/#how-it-works">How It Works</NavLink>
+          <NavLink href="/how-it-works">How&nbsp;It&nbsp;Works</NavLink>
 
           {!user ? (
             <Link
               href="/auth"
-              className="ml-6 px-6 py-2 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 transition select-none"
+              className="ml-6 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-2 text-sm font-semibold text-white shadow hover:shadow-lg transition"
             >
               Login
             </Link>
@@ -78,63 +133,57 @@ export default function Navbar() {
               <button
                 ref={profileBtnRef}
                 onClick={() => setProfileOpen((v) => !v)}
-                className="flex items-center gap-3 rounded-full px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition group select-none"
-                aria-haspopup="menu"
+                className="group flex items-center gap-3 rounded-full px-3 py-1 hover:bg-white/30 dark:hover:bg-slate-800/60 transition"
                 aria-expanded={profileOpen}
-                aria-controls="profile-menu"
                 type="button"
               >
-                <span className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 grid place-content-center text-white font-bold text-sm shadow-inner select-none">
-                  {getInitials(user.email)}
-                </span>
-                <span className="text-sm text-gray-700 dark:text-white font-medium truncate max-w-[120px]">
-                  {user.email?.split('@')[0] ?? ''}
+                {user.user_metadata?.avatar_url ? (
+                  <Image
+                    src={user.user_metadata.avatar_url}
+                    alt="User avatar"
+                    width={32}
+                    height={32}
+                    className="rounded-full object-cover shadow-inner"
+                    unoptimized
+                  />
+                ) : (
+                  <span className="grid h-8 w-8 place-content-center rounded-full bg-gradient-to-br from-blue-400 to-purple-600 text-white font-semibold text-sm shadow-inner">
+                    {initial(user.email)}
+                  </span>
+                )}
+                <span className="max-w-[120px] truncate text-slate-700 dark:text-slate-300 text-sm font-medium select-text">
+                  {user.email?.split('@')[0]}
                 </span>
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`w-4 h-4 ml-1 transition-transform duration-300 ${
-                    profileOpen ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
+                  className={`h-4 w-4 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
                   viewBox="0 0 24 24"
+                  fill="none"
                   stroke="currentColor"
-                  aria-hidden="true"
-                  focusable="false"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
+
               {profileOpen && (
                 <div
                   ref={profileMenuRef}
-                  id="profile-menu"
-                  className="absolute right-0 mt-2 w-52 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-lg py-2 z-50 animate-fade-in"
-                  tabIndex={-1}
-                  role="menu"
-                  aria-label="User menu"
+                  className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-white/20 dark:border-slate-700/50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xl"
                 >
                   <Link
                     href={`/profile/${user.id}`}
-                    className="block px-6 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition select-none"
                     onClick={() => setProfileOpen(false)}
-                    role="menuitem"
+                    className="flex items-center gap-2 px-6 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
                   >
-                    <User className="inline-block mr-2 w-4 h-4 stroke-2" />
-                    Profile
+                    <User className="h-4 w-4" /> Profile
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-6 py-3 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition select-none"
-                    role="menuitem"
-                    type="button"
+                    className="flex w-full items-center gap-2 px-6 py-3 text-sm text-red-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
                   >
-                    <LogOut className="inline-block mr-2 w-4 h-4 stroke-2" />
-                    Logout
+                    <LogOut className="h-4 w-4" /> Logout
                   </button>
                 </div>
               )}
@@ -142,43 +191,36 @@ export default function Navbar() {
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Toggle */}
         <button
-          className="md:hidden p-3 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 active:scale-95 transition transform"
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileOpen}
-          aria-haspopup="true"
+          className="md:hidden rounded-full p-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition"
           onClick={() => setMobileOpen((v) => !v)}
-          type="button"
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
         >
           {mobileOpen ? (
-            <X className="w-7 h-7 text-black dark:text-white" />
+            <X className="h-6 w-6" />
           ) : (
-            <Menu className="w-7 h-7 text-black dark:text-white" />
+            <Menu className="h-6 w-6" />
           )}
         </button>
       </div>
 
       {/* Mobile Dropdown */}
       {mobileOpen && (
-        <nav
-          className="md:hidden fixed top-[58px] left-0 right-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-gray-800 shadow-lg z-50 rounded-b-xl max-h-[calc(100vh-58px)] overflow-y-auto animate-slide-down"
-          role="menu"
-          aria-label="Mobile menu"
-        >
+        <nav className="md:hidden animate-slide-down rounded-b-xl border-t border-white/20 dark:border-slate-700/50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-lg">
           <NavLink
             href="/#how-it-works"
             onClick={() => setMobileOpen(false)}
-            className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 select-none"
+            className="block border-b border-white/10 dark:border-slate-700/40 px-6 py-4 text-lg"
           >
-            How It Works
+            How&nbsp;It&nbsp;Works
           </NavLink>
 
           {!user ? (
             <Link
               href="/auth"
               onClick={() => setMobileOpen(false)}
-              className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-semibold text-black dark:text-white bg-gray-100 dark:bg-neutral-800 rounded-b-xl hover:bg-gray-200 dark:hover:bg-neutral-700 select-none"
+              className="block rounded-b-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 text-lg font-semibold text-white"
             >
               Login
             </Link>
@@ -187,14 +229,14 @@ export default function Navbar() {
               <Link
                 href={`/profile/${user.id}`}
                 onClick={() => setMobileOpen(false)}
-                className="block px-6 py-4 border-b border-gray-200 dark:border-gray-700 text-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 select-none"
+                className="block border-b border-white/10 dark:border-slate-700/40 px-6 py-4 text-lg"
               >
                 Profile
               </Link>
               <button
                 onClick={handleLogout}
                 type="button"
-                className="w-full text-left px-6 py-4 text-lg font-semibold text-red-600 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-b-xl select-none"
+                className="block w-full rounded-b-xl bg-red-600 px-6 py-4 text-lg font-semibold text-white hover:bg-red-700"
               >
                 Logout
               </button>
@@ -203,30 +245,5 @@ export default function Navbar() {
         </nav>
       )}
     </header>
-  );
-}
-
-// Utility: NavLink for unified link style, with optional onClick & className override
-function NavLink({
-  href,
-  children,
-  onClick,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={`text-sm md:text-base text-gray-700 dark:text-gray-300 font-medium hover:underline transition select-none ${
-        className ?? ''
-      }`}
-    >
-      {children}
-    </Link>
   );
 }

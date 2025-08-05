@@ -1,3 +1,4 @@
+// ----- CircularScore component, keep in '@/components/resultPage/circular-score.tsx' -----
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -8,7 +9,7 @@ function AnimatedScore({ score }: { score: number }) {
     const end = score;
     if (start >= end) return;
     const increment = end > start ? 1 : -1;
-    const stepTime = 1000 / Math.abs(end - start);
+    const stepTime = 900 / Math.abs(end - start);
     const timer = setInterval(() => {
       start += increment;
       setDisplay(start);
@@ -16,7 +17,6 @@ function AnimatedScore({ score }: { score: number }) {
     }, stepTime);
     return () => clearInterval(timer);
   }, [score]);
-
   return <>{display}%</>;
 }
 
@@ -57,7 +57,6 @@ export default function CircularScore({ score = 0 }) {
         animate={{ strokeDashoffset: progress }}
         transition={{ duration: 1.1, type: 'spring' }}
       />
-      {/* Score Text */}
       <text
         x={radius}
         y={radius}

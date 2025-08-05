@@ -5,55 +5,51 @@ import { LucideUpload, LucideSettings, LucideRocket } from 'lucide-react';
 
 const steps = [
   {
-    icon: <LucideUpload size={32} />,
+    icon: <LucideUpload size={28} />,
     title: 'Upload Resume',
-    description:
-      'Start by uploading your resume in PDF format. Our AI will process it instantly.',
+    description: 'Drag-and-drop your PDF or DOCX. Our AI ingests it instantly.',
   },
   {
-    icon: <LucideSettings size={32} />,
+    icon: <LucideSettings size={28} />,
     title: 'AI Skill Analysis',
-    description:
-      'Our engine compares your skills with top job descriptions and highlights gaps.',
+    description: 'We compare your skills with the JD and surface gaps.',
   },
   {
-    icon: <LucideRocket size={32} />,
-    title: 'Get Tailored Suggestions',
+    icon: <LucideRocket size={28} />,
+    title: 'Tailored Suggestions',
     description:
-      'Receive suggestions to improve your resume, including skill recommendations and rewriting tips.',
+      'Get concrete edits & skill recommendations to lift your score.',
   },
 ];
 
 export default function HowItWorksSection() {
   return (
-    <section
-      id="how-it-works"
-      className="bg-white dark:bg-neutral-950 py-20 px-4 sm:px-6 lg:px-8"
-    >
-      <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+    <section id="how-it-works" className="px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
           How SkillSense Works
         </h2>
-        <p className="mt-4 max-w-2xl mx-auto text-base text-gray-600 dark:text-gray-400">
-          Just 3 simple steps to unlock your resume’s potential.
+        <p className="mt-4 mx-auto max-w-2xl text-base text-slate-600 dark:text-slate-400">
+          Three simple steps to unlock your resume’s potential
         </p>
 
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-10">
-          {steps.map((step, index) => (
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-10">
+          {steps.map((step, idx) => (
             <motion.div
-              key={index}
+              key={idx}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.2 }}
-              className="flex flex-col items-center p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-md dark:bg-neutral-900 bg-white"
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: idx * 0.15 }}
+              viewport={{ once: true }}
+              className="rounded-2xl border border-white/20 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/70 backdrop-blur-lg p-8 shadow-md"
             >
-              <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+              <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-white">
                 {step.icon}
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                 {step.title}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {step.description}
               </p>
             </motion.div>

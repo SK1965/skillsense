@@ -3,7 +3,7 @@ import { create } from 'zustand';
 interface ResumeStore {
   resume: File | null;
   jd: string;
-  setResume: (resume: File) => void;
+  setResume: (resume: File | null) => void;
   setJD: (jd: string) => void;
   reset: () => void;
 }
