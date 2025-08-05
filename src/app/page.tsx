@@ -1,47 +1,34 @@
-'use client';
+import Home from './HomeClient';
 
-import { useEffect, useRef } from 'react';
-import { useScroll, useTransform } from 'framer-motion';
-import { LenisRef, ReactLenis } from 'lenis/react';
-import { cancelFrame, frame } from 'motion';
-import Navbar from '@/components/navbar';
-import BackgroundBlobs from '@/components/homepage/background-blobs';
-import HeroSection from '@/components/homepage/hero-section';
-import FeaturesSection from '@/components/homepage/feature-section';
-import CTASection from '@/components/homepage/cta-section';
+//seo metadata
+export const metadata = {
+  title: 'SkillSense - AI Resume Analyzer',
+  description:
+    'Upload your resume and job description. Get match score, missing skills, and smart suggestions using AI.',
+  openGraph: {
+    title: 'SkillSense - AI Resume Analyzer',
+    description:
+      'Upload resume & job description, get AI-powered match insights!',
+    url: 'https://skillsense.vercel.app',
+    siteName: 'SkillSense',
+    images: [
+      {
+        url: 'https://skillsense.vercel.app/icons/icon.png',
+        width: 1200,
+        height: 630,
+        alt: 'SkillSense social preview',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SkillSense - Resume Match Tool',
+    description: 'Try SkillSense – Get smart AI insights into your resume!',
+    images: ['https://skillsense.vercel.app/icons/icon.png'],
+  },
+};
 
-// Components
-
-export default function Home() {
-  const lenisRef = useRef<LenisRef>(null);
-  const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 300], [0, -50]);
-  const y2 = useTransform(scrollY, [0, 300], [0, 50]);
-
-  useEffect(() => {
-    let rafId: number;
-    const update = (data: { timestamp: number }) => {
-      if (!lenisRef.current?.lenis) return;
-      rafId = requestAnimationFrame(() => {
-        lenisRef.current?.lenis?.raf(data.timestamp);
-      });
-    };
-    frame.update(update, true);
-    return () => {
-      cancelAnimationFrame(rafId);
-      cancelFrame(update);
-    };
-  }, []);
-
-  return (
-    <ReactLenis root options={{ autoRaf: false }} ref={lenisRef}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-x-hidden">
-        <BackgroundBlobs />
-        <Navbar />
-        <HeroSection y1={y1} y2={y2} />
-        <FeaturesSection />
-        <CTASection />
-      </div>
-    </ReactLenis>
-  );
+export default function page() {
+  return <Home />;
 }
