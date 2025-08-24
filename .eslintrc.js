@@ -4,7 +4,7 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:prettier/recommended', // Add Prettier integration
   ],
-  rules: {
-    // Your custom rules here
+  rules: {   
+    "node/no-deprecated-api": "warn"
   },
 };
